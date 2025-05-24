@@ -1,30 +1,42 @@
 package com.example.demo.service;
 
-
-import com.example.demo.service.entity.UserData;
-import com.example.demo.service.entity.UserRegisterData;
-import com.example.demo.service.repository.UserRepository;
+import com.example.demo.dto.UserDto;
+import com.example.demo.dto.UserRegisterDto;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
 
 public class UserService {
-    UserRepository repository;
+    private final UserRepository repository;
+
     public UserService(UserRepository userRepository) {
-        repository = userRepository;
+        this.repository = userRepository;
     }
 
-    public UserData getUserInfo(int id)
-    {
-        // AuthService.get ...
+    public UserDto getUserInfo(int id) {
+        User user = repository.getUser(id);
+        if (user == null) {
+            return null;
+        }
 
-        return null;
+        UserDto dto = new UserDto();
+        dto.setId(user.getUserId());
+        dto.setLogin(user.getUsername());
+        return dto;
     }
 
-    public boolean addUser(UserRegisterData data) {
-        // 1. Валидация
+    public boolean addUser(UserRegisterDto data) {
+        // Валидация
+        if (data.getLogin() == null || data.getLogin().isEmpty()) {
+            return false;
+        }
 
-        // 2. Логика
-        repository.addUser(data);
+        // Преобразование DTO в Entity
+        User user = new User();
+        user.setUsername(data.getLogin());
+        user.setPasswordHash(data.getPassword()); // В реальном приложении здесь должно быть хеширование
 
-        //Создание ответа
+        // Сохранение
+        repository.addUser(user);
 
         return true;
     }
